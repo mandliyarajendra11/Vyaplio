@@ -11,7 +11,6 @@ import { AuthError, login } from "@/lib/auth";
 import { useSessionUser, useShopForUser } from "@/lib/hooks";
 import { unlockApp } from "@/lib/lock";
 import { getSupabase } from "@/lib/supabase/client";
-import { openLocalPreview } from "@/lib/devPreview";
 
 export default function LoginPage() {
   const t = useTranslations("login");
@@ -23,14 +22,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const previewAvailable = process.env.NODE_ENV === "development" && typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
-
-  const previewShop = async () => {
-    setBusy(true); setError(null);
-    try { unlockApp(await openLocalPreview()); router.replace("/"); }
-    catch { setError(t("previewFailed")); }
-    finally { setBusy(false); }
-  };
 
   useEffect(() => {
     if (userId && shop) router.replace("/");
@@ -86,11 +77,6 @@ export default function LoginPage() {
         <div className="mb-4 hidden justify-end lg:flex">
           <LangToggle />
         </div>
-        {previewAvailable && <div className="card mb-5 space-y-3 border-2 border-mustard-deep p-4" data-testid="dev-preview">
-          <p className="font-bold">{t("previewOnly")}</p>
-          <button type="button" className="btn btn-teal w-full" disabled={busy} onClick={() => void previewShop()}>{t("previewShop")}</button>
-          <Link href="/dev/admin-preview" className="btn btn-ghost w-full">{t("previewAdmin")}</Link>
-        </div>}
         <Link href="/pricing" className="btn btn-primary min-h-[64px] w-full text-xl">{t("newShopPricing")} →</Link>
         <p className="mt-2 text-center text-ink-soft">{t("purchaseFirst")}</p>
         <Link href="/activate" className="btn btn-teal mt-5 min-h-[64px] w-full text-lg">{t("activatePaidShop")} →</Link>

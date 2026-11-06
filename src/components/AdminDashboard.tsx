@@ -13,16 +13,13 @@ type Row = {
 };
 type Audit = { id: number; shop_id: string; actor_id: string; event: "created" | "activated" | "renewed" | "disabled" | "enabled"; occurred_at: string };
 
-export default function AdminPage({ preview = false, previewNow = 0 }: { preview?: boolean; previewNow?: number }) {
+export default function AdminPage() {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(preview ? "local-preview" : null);
+  const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rows, setRows] = useState<Row[]>(() => preview ? [
-    { shop_id: "sample-1", email: "owner1@example.test", plan: "yearly", amount_paid: 2999, paid_at: new Date(previewNow - 320 * 86400000).toISOString(), expires_at: new Date(previewNow + 20 * 86400000).toISOString(), status: "active", must_change_password: false, shop: { name: "नमूना किराना", owner_name: "नमूना मालिक", phone: null } },
-    { shop_id: "sample-2", email: "owner2@example.test", plan: "lifetime", amount_paid: 11000, paid_at: new Date(previewNow - 10 * 86400000).toISOString(), expires_at: null, status: "active", must_change_password: false, shop: { name: "Sample Medical", owner_name: "Sample Owner", phone: null } },
-  ] : []);
-  const [serverNow, setServerNow] = useState(previewNow);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [serverNow, setServerNow] = useState(0);
   const [audit, setAudit] = useState<Audit[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +38,6 @@ export default function AdminPage({ preview = false, previewNow = 0 }: { preview
   }, [router]);
 
   useEffect(() => {
-    if (preview) return;
     let live = true;
     const client = getSupabase();
     if (!client) return;
@@ -50,7 +46,7 @@ export default function AdminPage({ preview = false, previewNow = 0 }: { preview
       try { await load(data.session.access_token); } catch (e) { if (live) setError(e instanceof Error ? e.message : "Could not load admin access."); }
     });
     return () => { live = false; };
-  }, [load, preview]);
+  }, [load]);
 
   const signIn = async () => {
     const client = getSupabase();
@@ -66,7 +62,7 @@ export default function AdminPage({ preview = false, previewNow = 0 }: { preview
   };
 
   const provision = async () => {
-    if (!token || preview) return;
+    if (!token) return;
     setBusy(true); setError(""); setCreated(null);
     try {
       const session = await getSupabase()?.auth.getSession();
@@ -90,7 +86,6 @@ export default function AdminPage({ preview = false, previewNow = 0 }: { preview
 
   return <main className="page-enter mx-auto min-h-dvh max-w-[1000px] space-y-6 px-5 py-7 lg:px-10">
     <div className="flex items-center justify-between gap-3"><Wordmark size="sm" sub={false} /><span className="font-bold">Admin</span></div>
-    {preview && <div className="rounded-2xl border-2 border-mustard-deep bg-mustard/15 p-4 font-semibold" role="status">Local preview only · All shops and payments below are sample data. Creating accounts is disabled.</div>}
     {!token ? <form className="card mx-auto max-w-[460px] space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); void signIn(); }}>
       <h1 className="font-brand text-2xl font-bold">Admin sign-in</h1>
       <label className="block"><span className="label">Email</span><input className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
@@ -98,13 +93,13 @@ export default function AdminPage({ preview = false, previewNow = 0 }: { preview
       <button className="btn btn-primary w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
       {error && <p role="alert" className="font-semibold text-brick">{error}</p>}
     </form> : <>
-      <div className="flex items-center justify-between gap-3"><h1 className="font-brand text-3xl font-bold">Paid shops</h1><button type="button" className="btn btn-ghost" onClick={async () => { if (preview) { router.replace("/login"); return; } await getSupabase()?.auth.signOut(); setToken(null); setRows([]); setCreated(null); }}>{preview ? "Back to login" : "Sign out"}</button></div>
+      <div className="flex items-center justify-between gap-3"><h1 className="font-brand text-3xl font-bold">Paid shops</h1><button type="button" className="btn btn-ghost" onClick={async () => { await getSupabase()?.auth.signOut(); setToken(null); setRows([]); setCreated(null); }}>Sign out</button></div>
       <div className="grid gap-3 sm:grid-cols-3"><div className="card p-4"><p className="text-ink-soft">Shops</p><p className="num text-3xl font-bold">{rows.length}</p></div><div className="card p-4"><p className="text-ink-soft">Payments recorded</p><p className="num text-3xl font-bold">{formatINR(revenue)}</p></div><div className="card p-4"><p className="text-ink-soft">Yearly due within 30 days</p><p className="num text-3xl font-bold">{dueSoon}</p></div></div>
       <form className="card space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); void provision(); }}>
         <h2 className="text-2xl font-bold">Create a paid shop</h2><p className="text-ink-soft">Confirm the payment in your bank or Razorpay dashboard before issuing an account.</p>
         <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="label">Customer email</span><input className="input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label><label className="block"><span className="label">Shop name</span><input className="input" required minLength={2} value={form.shopName} onChange={(e) => setForm({ ...form, shopName: e.target.value })} /></label><label className="block"><span className="label">Owner name</span><input className="input" value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} /></label><label className="block"><span className="label">Mobile number</span><input className="input num" type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label><label className="block"><span className="label">Plan</span><select className="input" value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value })}><option value="yearly">Yearly · ₹2,999</option><option value="lifetime">Lifetime · ₹11,000</option></select></label><label className="block"><span className="label">Payment reference / UTR</span><input className="input" required minLength={4} value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} /></label></div>
         <label className="flex items-center gap-3 font-semibold"><input type="checkbox" className="h-6 w-6 accent-teal" checked={form.paymentVerified} onChange={(e) => setForm({ ...form, paymentVerified: e.target.checked })} />I verified that this payment reached my account.</label>
-        <button className="btn btn-primary w-full sm:w-auto" disabled={preview || busy || !form.paymentVerified}>{preview ? "Unavailable in preview" : busy ? "Creating…" : "Create account and shop"}</button>
+        <button className="btn btn-primary w-full sm:w-auto" disabled={busy || !form.paymentVerified}>{busy ? "Creating…" : "Create account and shop"}</button>
       </form>
       {created && <section className="card space-y-2 border-2 border-teal p-5" role="status"><h2 className="text-xl font-bold">Account created</h2><p>{created.email}</p><p className="font-semibold">Temporary password: <span className="num select-all">{created.temporaryPassword}</span></p><p>Give this to the owner privately with the <a className="font-bold text-teal underline" href="/activate">activation page</a>. The password is shown only now. They must change it before their shop opens.</p><button type="button" className="btn btn-ghost" onClick={() => setCreated(null)}>Hide password</button></section>}
       {error && <p role="alert" className="rounded-xl bg-brick/10 p-4 font-semibold text-brick">{error}</p>}

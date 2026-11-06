@@ -51,8 +51,6 @@ npm run dev
 # open http://localhost:3001
 ```
 
-On the local development server, `/login` shows **Preview shop without login** and **Preview admin dashboard**. Both are temporary sample previews. The shop preview saves only local demo data; the admin preview cannot create accounts. These entry points are disabled outside local development.
-
 Public demo creation and displayed demo credentials are disabled. A seller can continue using an existing local sample shop on their own device.
 
 Production / PWA test (service worker is registered only in production builds):
