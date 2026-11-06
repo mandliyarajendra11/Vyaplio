@@ -3,15 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "admin:bootstrap": "node scripts/bootstrap-admin.cjs",
+"dev": "next dev -p 3001",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node tests/admin-access.test.cjs && node tests/pricing.test.cjs && node tests/first-week.test.cjs && node tests/phone-auth.test.cjs && node tests/closeout.test.cjs && node tests/product-import.test.cjs && node tests/save-safety.test.cjs && node tests/corrections.test.cjs && node tests/offline-sync.test.cjs && node tests/migration.test.cjs && node tests/cloud-sync.test.cjs && node tests/stock-shortage.test.cjs && node tests/split-payments.test.cjs && node tests/cash-closing.test.cjs && node tests/bills-search.test.cjs && node tests/hindi-search.test.cjs && node tests/readability.test.cjs && node tests/onboarding.test.cjs && node tests/profit.test.cjs && node tests/suppliers.test.cjs && node tests/orders.test.cjs && node tests/packs-loose.test.cjs && node tests/receipt.test.cjs && node tests/discounts.test.cjs && node tests/rounding.test.cjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "date-fns": "^4.4.0",
+    "dexie": "^4.4.6",
+    "dexie-react-hooks": "^4.4.0",
     "next": "16.4.2",
+    "next-intl": "^4.14.9",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "uqr": "0.1.3",
+    "uuid": "^14.0.3"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -20,6 +29,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "fake-indexeddb": "^6.2.6",
+    "react-test-renderer": "^19.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

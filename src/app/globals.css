@@ -1,26 +1,352 @@
 @import "tailwindcss";
 
+/* Vyaplio palette: mustard/amber + deep teal on cream paper. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f5ecd7;
+  --paper-2: #eadcbc;
+  --card: #fffaee;
+  --ink: #1d2b2c;
+  --ink-soft: #4f5c58;
+  --teal: #0e5a5e;
+  --teal-deep: #093e41;
+  --mustard: #e3a320;
+  --mustard-deep: #b97f0c;
+  --mustard-soft: #f6dc95;
+  /* Text-safe variants (WCAG AA on paper, paper-2 and card): mustard-deep / mustard stay for fills and shadows. */
+  --mustard-ink: #7d5300; /* body text: 5.7:1 on paper, 5.0:1 on paper-2 */
+  --mustard-strong: #9a6806; /* large accent text (wordmark): 4.1:1 on paper */
+  --brick: #a03b25; /* was #b1432b (4.2:1 on paper-2) */
+  --leaf: #24663f; /* was #2e7d4f (4.3:1 on paper) */
+  --wa: #167039; /* WhatsApp green, darkened from #1f8f4e: white text 6.2:1 */
+  --wa-deep: #0f5229;
+  --line: rgba(29, 43, 44, 0.14);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-mustard: var(--mustard);
+  --color-mustard-deep: var(--mustard-deep);
+  --color-mustard-soft: var(--mustard-soft);
+  --color-mustard-ink: var(--mustard-ink);
+  --color-mustard-strong: var(--mustard-strong);
+  --color-wa: var(--wa);
+  --color-brick: var(--brick);
+  --color-leaf: var(--leaf);
+  --color-line: var(--line);
+  --font-brand: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-manrope), var(--font-mukta), sans-serif;
+  --font-deva: var(--font-mukta), var(--font-manrope), sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-tap-highlight-color: transparent;
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image: var(--grain),
+    radial-gradient(1100px 620px at 8% -12%, rgba(227, 163, 32, 0.22), transparent 62%),
+    radial-gradient(900px 560px at 112% 8%, rgba(14, 90, 94, 0.13), transparent 60%),
+    linear-gradient(180deg, #f7efdc 0%, #f1e5ca 100%);
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem; /* 17px at default; rem so the phone's larger font setting scales it */
+  line-height: 1.45;
+  text-rendering: optimizeLegibility;
+  overflow-wrap: break-word; /* long Hindi words / product names wrap instead of pushing the page wider */
+}
+
+/* Hindi-first: Devanagari face leads when the UI is in Hindi. */
+html[lang="hi"] body {
+  font-family: var(--font-deva);
+  font-size: 1.125rem;
+}
+
+/* Keyboard focus: always a visible ring (teal-deep 10:1 on paper; offset so it shows around filled buttons too). */
+:focus-visible {
+  outline: 3px solid var(--teal-deep);
+  outline-offset: 2px;
+}
+.bg-teal:focus-visible,
+.bg-teal-deep:focus-visible,
+.bg-ink:focus-visible {
+  outline-color: var(--mustard);
+}
+
+/* Search boxes have their own clear (×) button: hide the browser's. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.font-brand {
+  font-family: var(--font-brand);
+  font-variation-settings: "SOFT" 60, "opsz" 96;
+}
+
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.money-xl {
+  font-family: var(--font-brand);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 15vw, 6rem); /* ₹17,52,215.5 fits at 320px */
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+  letter-spacing: -0.03em;
+  font-variant-numeric: lining-nums;
+}
+
+.eyebrow {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+html[lang="hi"] .eyebrow {
+  letter-spacing: 0.02em;
+  font-size: 0.95rem;
+}
+
+@layer components {
+/* Buttons – min 52px tap targets. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  padding: 0 1.25rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  transition: transform 0.12s ease, background-color 0.15s ease;
+  user-select: none;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+/* Disabled: flat paper-2 with ink-soft text (5.2:1) instead of a washed-out 50% copy of the button. */
+.btn:disabled {
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  border-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+.btn-primary {
+  background: var(--mustard);
+  color: var(--ink);
+  box-shadow: inset 0 -3px 0 var(--mustard-deep);
+}
+.btn-primary:hover {
+  background: #eaae2e;
+}
+.btn-teal {
+  background: var(--teal);
+  color: var(--paper);
+  box-shadow: inset 0 -3px 0 var(--teal-deep);
+}
+.btn-teal:hover {
+  background: #116569;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--line);
+}
+.btn-ghost:hover {
+  background: rgba(255, 250, 238, 0.7);
+}
+.btn-wa {
+  background: var(--wa);
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--wa-deep);
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 1rem;
+  border-radius: 0.9rem;
+  border: 2px solid var(--line);
+  background: rgba(255, 252, 244, 0.9);
+  font-size: 1.1rem;
+  color: var(--ink);
+  outline: none;
+}
+.input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(14, 90, 94, 0.3);
+}
+.label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* Fields scrolled into view above the on-screen keyboard keep some room around them. */
+.input,
+select,
+textarea {
+  scroll-margin: 5rem 0 7rem;
+}
+
+/* Containers only where interaction needs one. */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 6px 18px -12px rgba(29, 43, 44, 0.35);
+}
+
+.ruled > * + * {
+  border-top: 1.5px dashed var(--line);
+}
+
+.receipt-edge {
+  background: radial-gradient(circle at 8px -2px, transparent 7px, var(--card) 7.5px) repeat-x;
+  background-size: 16px 10px;
+  height: 10px;
+}
+}
+
+/* --- Motion (3 intentional transitions) --- */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter {
+  /* backwards (not both): no transform remains afterwards, so position:fixed children stay viewport-relative */
+  animation: page-enter 0.34s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.alert-in {
+  animation: alert-in 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 120ms);
+}
+
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-14deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+.sale-stamp {
+  animation: stamp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.check-draw {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: draw 0.4s 0.35s ease-out forwards;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .check-draw {
+    stroke-dashoffset: 0;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide number spinners – we use big steppers instead. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Recovery card: printing shows only the card (no app chrome, no secrets on it anyway). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-card,
+  .print-card * {
+    visibility: visible;
+  }
+  .print-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    color: #000;
+  }
 }
