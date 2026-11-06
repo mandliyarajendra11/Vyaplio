@@ -58,6 +58,7 @@
     "newShopPricing": "New shop? See plans",
     "purchaseFirst": "Choose a plan before setting up a new shop.",
     "restoreBackup": "Have a backup file? Restore your shop",
+    "backToAccount": "Use email and password instead",
     "activatePaidShop": "Got a temporary password? Activate your shop"
   },
   "setup": {

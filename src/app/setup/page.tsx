@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { BackupRestore } from "@/components/BackupPanel";
-import { CloudRecover } from "@/components/CloudPanel";
 import { LangToggle } from "@/components/LangToggle";
 import { PinSetup } from "@/components/PinSetup";
 import { RecoveryPoints } from "@/components/RecoveryHelp";
@@ -17,12 +16,11 @@ import { back, isLast, next, progress, saveDraft, skip, type OnboardData, type O
 import { setLocale } from "@/lib/prefs";
 import { finishOnboarding } from "@/lib/setupShop";
 import { SHOP_TYPES, starterFor, type PickedItem } from "@/lib/starter";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
 
-type Mode = "welcome" | "steps" | "backup" | "newPhone";
+type Mode = "welcome" | "steps" | "backup";
 
 /**
- * Assisted first-run setup: welcome (plans / backup file / new phone), then one
+ * Assisted first-run setup: welcome (plans / backup file), then one
  * question per screen with a progress bar. Every answer is saved on this phone, so closing the
  * app midway resumes at the same question. Existing shops never see this screen.
  */
@@ -94,9 +92,6 @@ export default function SetupPage() {
               <button type="button" className="btn btn-ghost min-h-[60px] w-full text-lg" onClick={() => setMode("backup")} data-testid="onboard-backup">
                 {t("fromBackup")}
               </button>
-              <button type="button" className="btn btn-ghost min-h-[60px] w-full text-lg" onClick={() => setMode("newPhone")} data-testid="onboard-newphone">
-                {t("newPhone")}
-              </button>
             </div>
           </>
         )}
@@ -104,23 +99,6 @@ export default function SetupPage() {
           <section className="card mt-8 space-y-2 p-5">
             <h1 className="text-2xl font-bold">{tb("restore")}</h1>
             <BackupRestore ownerId={userId} onRestored={() => router.replace("/")} />
-          </section>
-        )}
-        {mode === "newPhone" && (
-          <section className="mt-8 space-y-3">
-            <h1 className="text-2xl font-bold">{t("newPhone")}</h1>
-            {isSupabaseConfigured() ? (
-              <CloudRecover />
-            ) : (
-              <>
-                <p className="card p-5 text-lg" data-testid="onboard-nocloud">
-                  {t("newPhoneNoCloud")}
-                </p>
-                <button type="button" className="btn btn-teal w-full" onClick={() => setMode("backup")}>
-                  {t("fromBackup")}
-                </button>
-              </>
-            )}
           </section>
         )}
         {mode !== "welcome" && (

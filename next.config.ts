@@ -8,14 +8,6 @@ const nextConfig: NextConfig = {
     // instant navigation for segments that explicitly opt in.
     instantInsights: { validationLevel: "manual-warning" },
   },
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
   async headers() {
     return [
       {

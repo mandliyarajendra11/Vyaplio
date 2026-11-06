@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { cloudFinishPhoneLink, cloudSendPhoneOtp, cloudSignIn, cloudSignOut, cloudSignUp, cloudStartPhoneLink, cloudUser, linkShop, recoverFromCloud, recoverFromCloudPhone, replaceWithCloudShop, type CloudUser } from "@/lib/cloud";
+import { cloudFinishPhoneLink, cloudSignIn, cloudSignOut, cloudSignUp, cloudStartPhoneLink, cloudUser, linkShop, replaceWithCloudShop, type CloudUser } from "@/lib/cloud";
 import { fmtDate } from "@/lib/dates";
 import type { Locale, Shop } from "@/lib/db";
 import { useCloudLink, usePendingSync, useSyncRunning, useSyncStatus } from "@/lib/hooks";
@@ -269,49 +269,5 @@ export function CloudPanel({ shop, onToast }: { shop: Shop; onToast: (msg: strin
       {note && <p className="rounded-xl bg-teal/10 px-4 py-2 font-semibold text-teal">{note}</p>}
       {error && <ErrorBox text={error.text} detail={error.detail} />}
     </section>
-  );
-}
-
-/** Login screen: a new phone signs in to the cloud and downloads the whole shop. */
-export function CloudRecover() {
-  const t = useTranslations("cloud");
-  const tp = useTranslations("phoneAuth");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<{ text: string; detail?: string } | null>(null);
-  const [method, setMethod] = useState<"email" | "phone">("phone");
-  const [phone, setPhone] = useState("");
-  const [sentTo, setSentTo] = useState("");
-  const [code, setCode] = useState("");
-  const [localPassword, setLocalPassword] = useState("");
-  if (!isSupabaseConfigured()) return null;
-  const recover = async (email: string, password: string) => {
-    setBusy(true);
-    setError(null);
-    try {
-      await recoverFromCloud(email, password); // sets the session; the login page then opens the shop
-    } catch (e) {
-      setError({ text: cloudErrorText(t, e), detail: e instanceof SyncError && !["auth", "conflict", "noCloudShop"].includes(e.code) ? e.detail : undefined });
-    } finally {
-      setBusy(false);
-    }
-  };
-  const phoneRun = async (fn: () => Promise<void>) => {
-    setBusy(true); setError(null);
-    try { await fn(); }
-    catch (e) { setError({ text: e instanceof SyncError && e.detail === "phoneInvalid" ? tp("invalidPhone") : e instanceof SyncError && e.detail === "passwordShort" ? tp("passwordShort") : cloudErrorText(t, e) }); }
-    finally { setBusy(false); }
-  };
-  return (
-    <div className="card mt-6 space-y-3 p-5" data-testid="cloud-recover">
-      <h2 className="text-xl font-bold">{t("recoverTitle")}</h2>
-      <p className="text-ink-soft">{t("recoverHint")}</p>
-      <div className="grid grid-cols-2 gap-2"><button type="button" className={`btn ${method === "phone" ? "btn-teal" : "btn-ghost"}`} onClick={() => setMethod("phone")}>{tp("byPhone")}</button><button type="button" className={`btn ${method === "email" ? "btn-teal" : "btn-ghost"}`} onClick={() => setMethod("email")}>{tp("byEmail")}</button></div>
-      {method === "email" ? <CredentialsForm idPrefix="recover" busy={busy} submitLabel={busy ? t("recovering") : t("recover")} onSubmit={recover} /> : <div className="space-y-3">
-        <p className="text-sm text-ink-soft">{tp("recoverHint")}</p>
-        <label className="block"><span className="label">{tp("phone")}</span><input className="input" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9876543210" /></label>
-        {sentTo ? <><p className="font-semibold">{tp("sentTo", { phone: sentTo })}</p><label className="block"><span className="label">{tp("code")}</span><input className="input num" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} /></label><label className="block"><span className="label">{tp("offlinePassword")}</span><input className="input" type="password" autoComplete="new-password" minLength={6} value={localPassword} onChange={(e) => setLocalPassword(e.target.value)} /></label><p className="text-sm text-ink-soft">{tp("offlineHint")}</p><button type="button" className="btn btn-primary w-full" disabled={busy || !code || localPassword.length < 6} onClick={() => void phoneRun(async () => { await recoverFromCloudPhone(sentTo, code, localPassword); })}>{busy ? t("recovering") : tp("recover")}</button><button type="button" className="min-h-12 w-full font-semibold text-teal" disabled={busy} onClick={() => setSentTo("")}>{tp("changePhone")}</button></> : <button type="button" className="btn btn-teal w-full" disabled={busy} onClick={() => void phoneRun(async () => { setSentTo(await cloudSendPhoneOtp(phone)); })}>{tp("send")}</button>}
-      </div>}
-      {error && <ErrorBox text={error.text} detail={error.detail} />}
-    </div>
   );
 }
